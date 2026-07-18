@@ -1,0 +1,164 @@
+"use client";
+
+import { useState } from "react";
+
+interface TokenPack {
+  id: string;
+  name: string;
+  tokens: number;
+  price: number;
+  pricePerToken: string;
+  discount?: string;
+  checkoutUrl: string;
+  isPopular?: boolean; // Para destacar el pack estrella como el plan "Pro"
+}
+
+export default function TokensPage() {
+  const [loadingPack, setLoadingPack] = useState<string | null>(null);
+
+  const tokenPacks: TokenPack[] = [
+    {
+      id: "pack_50",
+      name: "Starter Pack",
+      tokens: 50,
+      price: 10,
+      pricePerToken: "$0.20",
+      checkoutUrl: "TU_LINK_DE_LEMON_SQUEEZY_50",
+    },
+    {
+      id: "pack_100",
+      name: "Creator Pack",
+      tokens: 100,
+      price: 18,
+      pricePerToken: "$0.18",
+      checkoutUrl: "TU_LINK_DE_LEMON_SQUEEZY_100",
+    },
+    {
+      id: "pack_250",
+      name: "Pro Pack",
+      tokens: 250,
+      price: 40,
+      pricePerToken: "$0.16",
+      checkoutUrl: "TU_LINK_DE_LEMON_SQUEEZY_250",
+      isPopular: true, // Este va a tener el diseño brillante y el botón degradado naranja/rosa
+    },
+    {
+      id: "pack_500",
+      name: "Business Pack",
+      tokens: 500,
+      price: 75,
+      pricePerToken: "$0.15",
+      checkoutUrl: "TU_LINK_DE_LEMON_SQUEEZY_500",
+    },
+  ];
+
+  const handlePurchase = (pack: TokenPack) => {
+    setLoadingPack(pack.id);
+    window.location.href = pack.checkoutUrl;
+  };
+
+  return (
+    <div className="min-h-screen bg-[#02040a] text-white flex flex-col justify-center px-6 py-16">
+      <div className="mx-auto max-w-6xl w-full space-y-12">
+        
+        {/* Encabezado idéntico al de Suscripción */}
+        <div className="space-y-4 text-center">
+          <div className="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-blue-400 uppercase">
+            Cargar Crédito
+          </div>
+          <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+            Comprar Packs de Tokens
+          </h2>
+          <p className="text-zinc-400 max-w-md mx-auto text-sm sm:text-base">
+            ¿Te quedaste corto? Sumá tokens extra al instante sin perder tu suscripción actual.
+          </p>
+        </div>
+
+        {/* Grilla de Tarjetas con diseño calcado de /pricing */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 pt-4">
+          {tokenPacks.map((pack) => (
+            <div
+              key={pack.id}
+              className={`relative flex flex-col justify-between rounded-[2rem] border p-8 transition-all duration-300 ${
+                pack.isPopular
+                  ? "border-amber-500/30 bg-[#0d0f14] shadow-[0_0_30px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/20"
+                  : "border-white/5 bg-[#0d0f14] hover:border-white/10"
+              }`}
+            >
+              {/* Badge dorado para el pack Pro destacado */}
+              {pack.isPopular && (
+                <span className="absolute -top-3 right-6 rounded-full bg-amber-500/10 border border-amber-500/30 px-3 py-1 text-xs font-bold text-amber-400">
+                  Más Popular
+                </span>
+              )}
+
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-white">{pack.name}</h3>
+                
+                {/* Precio en grande */}
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-extrabold tracking-tight text-white">
+                    ${pack.price}
+                  </span>
+                  <span className="text-xs text-zinc-500 font-medium">/ pack</span>
+                </div>
+
+                {/* Lista de características con las tildes verdes redondeadas */}
+                <ul className="space-y-3 pt-4 border-t border-white/5">
+                  <li className="flex items-center gap-3 text-sm text-zinc-300">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                    <span className="font-semibold text-white">{pack.tokens} videos / tokens</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-zinc-400">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                    <span>Sin vencimiento</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-zinc-400">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                    <span>{pack.pricePerToken} por token</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Botones idénticos a los del Pricing */}
+              <button
+                onClick={() => handlePurchase(pack)}
+                disabled={loadingPack !== null}
+                className={`mt-8 w-full rounded-full py-3 text-sm font-semibold transition-all duration-200 disabled:opacity-50 ${
+                  pack.isPopular
+                    ? "bg-gradient-to-r from-amber-500 to-red-500 text-white font-bold hover:brightness-110 shadow-lg shadow-orange-500/20"
+                    : "border border-white/10 bg-white/5 text-white hover:bg-white/10"
+                }`}
+              >
+                {loadingPack === pack.id ? "Cargando..." : `Comprar ${pack.name}`}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Botón sutil para volver atrás */}
+        <div className="text-center pt-8">
+          <a
+            href="/dashboard"
+            className="inline-block text-sm text-zinc-500 hover:text-white transition underline underline-offset-4"
+          >
+            Volver al Dashboard
+          </a>
+        </div>
+
+      </div>
+    </div>
+  );
+}
