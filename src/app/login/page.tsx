@@ -15,7 +15,7 @@ export default function LoginPage() {
     provider: "google",
     options: {
       // Esto le dice a Google que mande el código al archivo que acabas de crear
-      redirectTo: "http://localhost:3001/auth/callback",
+      redirectTo: "https://stonestudio.cc/auth/callback",
     },
   });
 
