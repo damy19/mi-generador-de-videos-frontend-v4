@@ -44,7 +44,9 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
-// Indicamos que este middleware solo corra en las rutas del dashboard y login
+// Indicamos que este middleware solo corra en las rutas del dashboard, login y callback OAuth
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  // Incluir el callback es clave para que Supabase/SSR pueda leer/escribir cookies de sesión
+  matcher: ["/dashboard/:path*", "/login", "/auth/callback"],
 };
+
