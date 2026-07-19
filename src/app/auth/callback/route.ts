@@ -3,10 +3,12 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  // Si tienes una página para redirigir después del login, ponla aquí
   const next = searchParams.get("next") ?? "/dashboard";
+
+  // Usamos NEXT_PUBLIC_SITE_URL como base confiable. Si no existe, cae en el origin del request.
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
 
   if (code) {
     const cookieStore = await cookies();
@@ -25,7 +27,7 @@ export async function GET(request: Request) {
               );
             } catch {
               // El método setAll puede ser llamado desde Server Components
-              // donde no siempre se pueden modificar las cookies. Se puede ignorar de forma segura aquí.
+              // donde no siempre se pueden modificar las cookies.
             }
           },
         },
@@ -34,12 +36,13 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      // Forzamos la redirección exacta al dominio con www (o tu baseurl configurada)
+      return NextResponse.redirect(`${baseUrl}${next}`);
     }
   }
 
-  // Si algo falla, lo devolvemos a la página de login con un error visual
-  return NextResponse.redirect(`${origin}/login?error=auth_failed`);
+  // Si algo falla, redirige al login del dominio base confiable
+  return NextResponse.redirect(`${baseUrl}/login?error=auth_failed`);
 }
 
 
