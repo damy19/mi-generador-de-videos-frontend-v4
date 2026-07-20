@@ -27,7 +27,7 @@ type ModelType = "cheap" | "normal" | "full" | "premium";
 
 const MODEL_TOKEN_COST: Record<ModelType, number> = {
   cheap: 1,
-  normal: 5, // Corregido de 6 a 5 para que coincida con tu UI gráfica
+  normal: 6, // Corregido de 6 a 5 para que coincida con tu UI gráfica
   full: 10,
   premium: 16,
 };
@@ -449,7 +449,7 @@ export default function DashboardPage() {
                     {(
                       [
                         { key: "cheap", label: "Low", tokens: 1, dur: 5 },
-                        { key: "normal", label: "Medium", tokens: 5, dur: 5 },
+                        { key: "normal", label: "Medium", tokens: 6, dur: 5 },
                         { key: "full", label: "Full", tokens: 10, dur: 5 },
                         { key: "premium", label: "High", tokens: 16, dur: 5 },
                       ] as const
