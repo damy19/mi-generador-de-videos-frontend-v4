@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { clearAuthToken, getAuthToken } from "../../lib/auth";
 import { API_BASE_URL, createVideo, getCurrentUser, getMyVideos } from "../../lib/api";
@@ -596,6 +597,35 @@ export default function DashboardPage() {
               </div>
             </section>
           </div>
+
+          {/* FOOTER */}
+          <footer className="mt-12 border-t border-white/10 pt-8">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+              <p className="text-sm text-zinc-400">
+                &copy; 2026 Stone Studio. Todos los derechos reservados.
+              </p>
+              <div className="flex gap-6">
+                <Link
+                  href="/terms"
+                  className="text-sm text-zinc-400 transition hover:text-white"
+                >
+                  Términos y Condiciones
+                </Link>
+                <Link
+                  href="/privacy"
+                  className="text-sm text-zinc-400 transition hover:text-white"
+                >
+                  Política de Privacidad
+                </Link>
+                <Link
+                  href="/refunds"
+                  className="text-sm text-zinc-400 transition hover:text-white"
+                >
+                  Política de Reembolsos
+                </Link>
+              </div>
+            </div>
+          </footer>
         </div>
       </main>
     </div>
