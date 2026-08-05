@@ -28,18 +28,16 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Validamos si hay un usuario autenticado
+// Validamos si hay un usuario autenticado
   const { data: { user } } = await supabase.auth.getUser();
-
-  // Si intenta entrar al dashboard y NO está logueado, lo mandamos al login
-  if (request.nextUrl.pathname.startsWith("/dashboard") && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
 
   // Si ya está logueado e intenta ir al login, lo mandamos al dashboard
   if (request.nextUrl.pathname.startsWith("/login") && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
+
+  // Nota: ya NO redirigimos /dashboard -> /login cuando no hay usuario.
+  // El dashboard se muestra con el overlay de "Continuar con Google" superpuesto.
 
   return response;
 }

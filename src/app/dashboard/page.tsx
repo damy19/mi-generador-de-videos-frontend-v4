@@ -266,11 +266,12 @@ const [loading, setLoading] = useState(false);
 
       setLoadingUser(false);
 
-      if (userResponse.error) {
+if (userResponse.error) {
         setError(userResponse.error);
         if (userResponse.error.toLowerCase().includes("token")) {
           clearAuthToken();
-          router.push("/login");
+          // Mostramos el overlay de Google en lugar de redirigir al login
+          setIsAuthenticated(false);
         }
         return;
       }
@@ -349,10 +350,11 @@ const handleLogout = async () => {
     setError(null);
     setSuccess(null);
 
-    const token = await getAuthToken();
+const token = await getAuthToken();
     if (!token) {
       setError("No se encontró el token de autenticación. Inicia sesión de nuevo.");
-      router.push("/login");
+      // Mostramos el overlay de Google en lugar de redirigir al login
+      setIsAuthenticated(false);
       return;
     }
 
