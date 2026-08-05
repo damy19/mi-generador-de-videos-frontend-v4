@@ -51,6 +51,44 @@ const MODEL_TOKEN_COST: Record<ModelType, number> = {
 
 const STREAM_PROXY_BASE = `${BACKEND_BASE_URL}/api/videos/stream`;
 
+// Datos dummy SOLO para mostrar la estructura del dashboard cuando no hay sesión activa.
+// No se mezclan con el estado real de `videos` para no tocar la lógica de historial/auth.
+const DUMMY_VIDEOS: VideoItem[] = [
+  {
+    id: -1,
+    temaOriginal: "Ciberpunk city at night",
+    duracion: 5,
+    guion: "",
+    urlAudio: null,
+    urlVideo: null,
+    falRequestId: null,
+    estado: "COMPLETADO",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: -2,
+    temaOriginal: "Aurora boreal time-lapse",
+    duracion: 5,
+    guion: "",
+    urlAudio: null,
+    urlVideo: null,
+    falRequestId: null,
+    estado: "PROCESANDO",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: -3,
+    temaOriginal: "Olas oceánicas futuristas",
+    duracion: 5,
+    guion: "",
+    urlAudio: null,
+    urlVideo: null,
+    falRequestId: null,
+    estado: "PENDIENTE",
+    createdAt: new Date().toISOString(),
+  },
+];
+
 export default function DashboardPage() {
   const router = useRouter();
 
@@ -429,7 +467,11 @@ const token = await getAuthToken();
         <div className="absolute right-0 top-1/3 h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px]" />
       </div>
 
-      <aside className="relative z-10 flex w-72 shrink-0 flex-col border-r border-slate-800/80 bg-[#0a0d16]/90 px-5 py-6 backdrop-blur-xl">
+<aside
+        className={`relative z-10 flex w-72 shrink-0 flex-col border-r border-slate-800/80 bg-[#0a0d16]/90 px-5 py-6 backdrop-blur-xl transition-opacity duration-700 ${
+          !isAuthenticated ? "opacity-40" : "opacity-100"
+        }`}
+      >
         {/* Logo */}
         <div className="flex items-center gap-3">
           <div className="relative h-11 w-11 rounded-2xl bg-gradient-to-br from-violet-500 via-blue-500 to-cyan-400 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_0_40px_rgba(59,130,246,0.5)]">
@@ -454,8 +496,14 @@ const token = await getAuthToken();
             </span>
           </div>
           <div className="relative mt-3 flex items-end gap-2">
-            <p className="text-4xl font-bold tracking-tight text-white">
-              {loadingUser ? "..." : tokens !== null ? tokens : "--"}
+<p className="text-4xl font-bold tracking-tight text-white">
+              {loadingUser
+                ? "..."
+                : !isAuthenticated
+                ? 250
+                : tokens !== null
+                ? tokens
+                : "--"}
             </p>
             <p className="pb-1 text-sm text-zinc-400">tokens</p>
           </div>
@@ -500,7 +548,11 @@ const token = await getAuthToken();
         </nav>
       </aside>
 
-      <main className="relative z-10 flex-1 overflow-y-auto">
+<main
+        className={`relative z-10 flex-1 overflow-y-auto transition-opacity duration-700 ${
+          !isAuthenticated ? "opacity-40" : "opacity-100"
+        }`}
+      >
         <div className="mx-auto max-w-7xl px-6 py-8">
           {/* Encabezado */}
           <div>
@@ -697,8 +749,40 @@ const token = await getAuthToken();
                   </div>
                 ) : null}
 
-                <div className="mt-4">
-                  {loadingVideos ? (
+<div className="mt-4">
+                  {loadingVideos && !isAuthenticated ? (
+                    <div className="text-sm text-zinc-400">Cargando creaciones...</div>
+                  ) : !isAuthenticated ? (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {DUMMY_VIDEOS.map((video) => (
+                        <div
+                          key={video.id}
+                          className="rounded-2xl border border-slate-800 bg-[#0b0e17] p-4 transition hover:border-slate-700"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-[11px] text-zinc-500">{formatDate(video.createdAt)}</p>
+                              <h4 className="mt-1 max-w-[180px] truncate text-sm font-medium text-white">
+                                {video.temaOriginal}
+                              </h4>
+                            </div>
+                            <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${getStatusBadge(video.estado)}`}>
+                              {video.estado}
+                            </span>
+                          </div>
+                          {String(video.estado).toUpperCase() === "COMPLETADO" && video.urlVideo ? (
+                            <span className="mt-3 block w-full rounded-xl bg-white/5 py-1.5 text-center text-xs font-semibold text-white/70">
+                              Ver video
+                            </span>
+                          ) : (
+                            <span className="mt-3 block rounded-xl bg-white/5 py-1 text-center text-[11px] text-zinc-500">
+                              En progreso / Sin URL
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : loadingVideos ? (
                     <div className="text-sm text-zinc-400">Cargando creaciones...</div>
                   ) : videos.length === 0 ? (
                     <div className="text-sm text-zinc-500">Aún no generaste ningún video.</div>
