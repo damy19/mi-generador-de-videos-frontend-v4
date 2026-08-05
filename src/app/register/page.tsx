@@ -28,9 +28,9 @@ export default function RegisterPage() {
       return;
     }
 
-    if (response.token) {
+if (response.token) {
       saveAuthToken(response.token);
-      router.push("/dashboard");
+      router.push("/");
       return;
     }
 
@@ -95,7 +95,7 @@ export default function RegisterPage() {
           </form>
 
           <p className="mt-8 text-center text-sm text-zinc-400">
-            ¿Ya tenés cuenta? <Link href="/login" className="text-blue-400 hover:text-blue-300">Iniciar sesión</Link>
+¿Ya tenés cuenta? <Link href="/" className="text-blue-400 hover:text-blue-300">Iniciar sesión</Link>
           </p>
         </div>
       </div>

@@ -61,9 +61,9 @@ export default function PricingPage() {
   const handleBuy = async (plan: Plan) => {
     try {
       const token = await getAuthToken();
-      if (!token) {
+if (!token) {
         // Si no hay sesión de Supabase, pedimos login pero no intentamos crear el checkout.
-        router.push("/login");
+        router.push("/");
         return;
       }
 

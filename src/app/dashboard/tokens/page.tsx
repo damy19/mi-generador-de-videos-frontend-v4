@@ -150,11 +150,11 @@ export default function TokensPage() {
 
         {/* Botón sutil para volver atrás */}
         <div className="text-center pt-8">
-          <a
-            href="/dashboard"
+<a
+            href="/"
             className="inline-block text-sm text-zinc-500 hover:text-white transition underline underline-offset-4"
           >
-            Volver al Dashboard
+            Volver al Inicio
           </a>
         </div>
 
