@@ -3,16 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAuthToken } from "../../lib/auth";
-import { API_BASE_URL } from "../../lib/api";
-
-const checkoutApi = `${API_BASE_URL}/api/checkout/custom-pack`;
+import { getCurrentUser } from "../../lib/api";
+import { openPaddleCheckout } from "../../lib/paddle";
 
 type Plan = {
   name: string;
-
   price: number;
-  checkoutUrl: string;
-  variantId: number;
+  priceId: string;
+  tokens: number;
   features: string[];
   recommended?: boolean;
 };
@@ -21,34 +19,30 @@ const plans: Plan[] = [
   {
     name: "Starter",
     price: 8.0,
-    checkoutUrl:
-      "https://dmia.lemonsqueezy.com/checkout/buy/afea6f70-1b8a-42fb-b8c4-147a49f7c887",
-    variantId: 1773938,
+    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER || "",
+    tokens: 40,
     features: ["40 videos al mes"],
   },
   {
     name: "Creator",
     price: 18.0,
-    checkoutUrl:
-      "https://dmia.lemonsqueezy.com/checkout/buy/6d450301-5fe8-4f1a-b18b-771d82219243",
-    variantId: 1773941,
+    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_CREATOR || "",
+    tokens: 120,
     features: ["120 videos al mes"],
   },
   {
     name: "Pro",
     price: 36.0,
-    checkoutUrl:
-      "https://dmia.lemonsqueezy.com/checkout/buy/d860402f-856d-4227-884f-6ca00973f7e8",
-    variantId: 1773945,
+    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO || "",
+    tokens: 300,
     features: ["300 videos al mes"],
     recommended: true,
   },
   {
     name: "Business",
     price: 80.0,
-    checkoutUrl:
-      "https://dmia.lemonsqueezy.com/checkout/buy/72156fbe-306c-4d3f-8514-276016bf5008",
-    variantId: 1773949,
+    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_BUSINESS || "",
+    tokens: 800,
     features: ["800 videos al mes"],
   },
 ];
@@ -56,44 +50,47 @@ const plans: Plan[] = [
 export default function PricingPage() {
   const router = useRouter();
   const [buying, setBuying] = useState(false);
-  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   const handleBuy = async (plan: Plan) => {
     try {
+      if (!plan.priceId) {
+        throw new Error(
+          `Falta configurar el Price ID del plan ${plan.name} en frontend/.env.local.`
+        );
+      }
+
       const token = await getAuthToken();
-if (!token) {
-        // Si no hay sesión de Supabase, pedimos login pero no intentamos crear el checkout.
+      if (!token) {
+        // Si no hay sesión de Supabase, pedimos login.
         router.push("/");
         return;
       }
 
       setBuying(true);
-      setSelectedVariantId(plan.variantId);
+      setSelectedPlan(plan.name);
 
-      const response = await fetch(checkoutApi, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ variantId: plan.variantId }),
+      // Necesitamos el id del usuario (de Prisma) para acreditarlo en el webhook.
+      const userResponse = await getCurrentUser(token);
+      if (userResponse.error) {
+        throw new Error(userResponse.error || "No se pudo obtener el usuario.");
+      }
+
+      const anyUser = userResponse as unknown as {
+        usuario?: { id?: number | string | null };
+      };
+      const userId = anyUser.usuario?.id ?? null;
+
+      // Checkout 100% client-side con @paddle/paddle-js.
+      await openPaddleCheckout({
+        priceId: plan.priceId,
+        userId,
+        successUrl: `${window.location.origin}/`,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.error || "No se pudo crear el checkout de pago.");
-      }
-
-      if (!data?.url) {
-        throw new Error("No se recibió la URL del checkout.");
-      }
-
-      window.location.href = data.url;
     } catch (err) {
       console.error("handleBuy error:", err);
       alert(
-        err instanceof Error ? err.message : "Ocurrió un error al crear el checkout."
+        err instanceof Error ? err.message : "Ocurrió un error al abrir el checkout."
       );
     } finally {
       setBuying(false);
@@ -101,7 +98,6 @@ if (!token) {
   };
 
   return (
-
     <div className="min-h-screen bg-[#05070f] text-white">
       <div className="mx-auto w-full max-w-7xl px-6 py-10">
         <div className="text-center">
@@ -120,7 +116,7 @@ if (!token) {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
             {plans.map((plan) => (
               <div
-                key={plan.variantId}
+                key={plan.name}
                 className={
                   plan.recommended
                     ? "relative overflow-hidden rounded-[2rem] border border-amber-400/30 bg-white/5 p-7 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_30px_100px_rgba(245,158,11,0.18)] backdrop-blur-xl"
@@ -156,7 +152,7 @@ if (!token) {
                 <ul className="mt-6 space-y-3">
                   {plan.features.map((feature, idx) => (
                     <li
-                      key={`${plan.variantId}-f-${idx}`}
+                      key={`${plan.name}-f-${idx}`}
                       className="flex items-start gap-3 text-sm text-zinc-200"
                     >
                       <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full border border-emerald-400/25 bg-emerald-400/10 text-emerald-200">
@@ -171,15 +167,15 @@ if (!token) {
                   <button
                     type="button"
                     onClick={() => handleBuy(plan)}
-                    disabled={buying && selectedVariantId === plan.variantId}
+                    disabled={buying && selectedPlan === plan.name}
                     className={
                       plan.recommended
                         ? "block w-full rounded-3xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 px-5 py-3 text-center text-sm font-semibold text-black transition hover:opacity-95 disabled:opacity-60"
                         : "block w-full rounded-3xl border border-white/10 bg-white/5 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-60"
                     }
                   >
-                    {buying && selectedVariantId === plan.variantId
-                      ? "Creando checkout..."
+                    {buying && selectedPlan === plan.name
+                      ? "Abriendo checkout..."
                       : `Contratar ${plan.name}`}
                   </button>
                 </div>

@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { getAuthToken } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/api";
+import { openPaddleCheckout } from "@/lib/paddle";
 
 interface TokenPack {
   id: string;
@@ -8,53 +12,90 @@ interface TokenPack {
   tokens: number;
   price: number;
   pricePerToken: string;
-  discount?: string;
-  checkoutUrl: string;
+  priceId: string;
   isPopular?: boolean; // Para destacar el pack estrella como el plan "Pro"
 }
 
 export default function TokensPage() {
+  const router = useRouter();
   const [loadingPack, setLoadingPack] = useState<string | null>(null);
 
   const tokenPacks: TokenPack[] = [
     {
-      id: "pack_50",
+      id: "pack_starter",
       name: "Starter Pack",
-      tokens: 50,
-      price: 10,
+      tokens: 40,
+      price: 8,
       pricePerToken: "$0.20",
-      checkoutUrl: "TU_LINK_DE_LEMON_SQUEEZY_50",
+      priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER || "",
     },
     {
-      id: "pack_100",
+      id: "pack_creator",
       name: "Creator Pack",
-      tokens: 100,
+      tokens: 120,
       price: 18,
-      pricePerToken: "$0.18",
-      checkoutUrl: "TU_LINK_DE_LEMON_SQUEEZY_100",
+      pricePerToken: "$0.15",
+      priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_CREATOR || "",
     },
     {
-      id: "pack_250",
+      id: "pack_pro",
       name: "Pro Pack",
-      tokens: 250,
-      price: 40,
-      pricePerToken: "$0.16",
-      checkoutUrl: "TU_LINK_DE_LEMON_SQUEEZY_250",
+      tokens: 300,
+      price: 36,
+      pricePerToken: "$0.12",
+      priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO || "",
       isPopular: true, // Este va a tener el diseño brillante y el botón degradado naranja/rosa
     },
     {
-      id: "pack_500",
+      id: "pack_business",
       name: "Business Pack",
-      tokens: 500,
-      price: 75,
-      pricePerToken: "$0.15",
-      checkoutUrl: "TU_LINK_DE_LEMON_SQUEEZY_500",
+      tokens: 800,
+      price: 80,
+      pricePerToken: "$0.10",
+      priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_BUSINESS || "",
     },
   ];
 
-  const handlePurchase = (pack: TokenPack) => {
-    setLoadingPack(pack.id);
-    window.location.href = pack.checkoutUrl;
+  const handlePurchase = async (pack: TokenPack) => {
+    try {
+      if (!pack.priceId) {
+        throw new Error(
+          `Falta configurar el Price ID del pack ${pack.name} en frontend/.env.local.`
+        );
+      }
+
+      const token = await getAuthToken();
+      if (!token) {
+        router.push("/");
+        return;
+      }
+
+      setLoadingPack(pack.id);
+
+      // Necesitamos el id del usuario (de Prisma) para acreditarlo en el webhook.
+      const userResponse = await getCurrentUser(token);
+      if (userResponse.error) {
+        throw new Error(userResponse.error || "No se pudo obtener el usuario.");
+      }
+
+      const anyUser = userResponse as unknown as {
+        usuario?: { id?: number | string | null };
+      };
+      const userId = anyUser.usuario?.id ?? null;
+
+      await openPaddleCheckout({
+        priceId: pack.priceId,
+        userId,
+        successUrl: `${window.location.origin}/`,
+      });
+    } catch (err) {
+      console.error("handlePurchase error:", err);
+      alert(
+        err instanceof Error ? err.message : "Ocurrió un error al abrir el checkout."
+      );
+    } finally {
+      setLoadingPack(null);
+    }
   };
 
   return (
@@ -142,7 +183,7 @@ export default function TokensPage() {
                     : "border border-white/10 bg-white/5 text-white hover:bg-white/10"
                 }`}
               >
-                {loadingPack === pack.id ? "Cargando..." : `Comprar ${pack.name}`}
+                {loadingPack === pack.id ? "Abriendo checkout..." : `Comprar ${pack.name}`}
               </button>
             </div>
           ))}
@@ -162,3 +203,4 @@ export default function TokensPage() {
     </div>
   );
 }
+
