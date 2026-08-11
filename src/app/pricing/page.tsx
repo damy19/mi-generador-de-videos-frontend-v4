@@ -76,15 +76,27 @@ export default function PricingPage() {
         throw new Error(userResponse.error || "No se pudo obtener el usuario.");
       }
 
-      const anyUser = userResponse as unknown as {
-        usuario?: { id?: number | string | null };
-      };
-      const userId = anyUser.usuario?.id ?? null;
+      // 1. Extraemos el ID probando las distintas estructuras posibles que puede devolver la API
+      const responseData = userResponse as Record<string, any>;
+      const userId =
+        responseData.usuario?.id ||
+        responseData.user?.id ||
+        responseData.id ||
+        null;
 
-      // Checkout 100% client-side con @paddle/paddle-js.
+      // 2. Si no hay userId, frenamos y avisamos antes de abrir el checkout
+      if (!userId) {
+        throw new Error(
+          "No se pudo obtener el ID del usuario. Por favor vuelve a iniciar sesión."
+        );
+      }
+
+      console.log("--> userId obtenido para el checkout:", userId);
+
+      // 3. Checkout 100% client-side con @paddle/paddle-js.
       await openPaddleCheckout({
         priceId: plan.priceId,
-        userId,
+        userId: String(userId),
         successUrl: `${window.location.origin}/`,
       });
     } catch (err) {
@@ -107,9 +119,7 @@ export default function PricingPage() {
           <h1 className="mt-4 text-4xl font-semibold tracking-tight">
             Elegí tu plan
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-zinc-400">
-            
-          </p>
+          <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-zinc-400"></p>
         </div>
 
         <div className="mt-10">
@@ -136,7 +146,6 @@ export default function PricingPage() {
                     <h2 className="text-xl font-semibold text-white">
                       {plan.name}
                     </h2>
-                    
                   </div>
                 </div>
 
@@ -179,13 +188,10 @@ export default function PricingPage() {
                       : `Contratar ${plan.name}`}
                   </button>
                 </div>
-
               </div>
             ))}
           </div>
         </div>
-
-        
       </div>
     </div>
   );
