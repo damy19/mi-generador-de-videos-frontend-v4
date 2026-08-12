@@ -62,7 +62,6 @@ export default function PricingPage() {
 
       const token = await getAuthToken();
       if (!token) {
-        // Si no hay sesión de Supabase, pedimos login.
         router.push("/");
         return;
       }
@@ -70,13 +69,11 @@ export default function PricingPage() {
       setBuying(true);
       setSelectedPlan(plan.name);
 
-      // Necesitamos el id del usuario (de Prisma) para acreditarlo en el webhook.
       const userResponse = await getCurrentUser(token);
       if (userResponse.error) {
         throw new Error(userResponse.error || "No se pudo obtener el usuario.");
       }
 
-      // 1. Extraemos el ID probando las distintas estructuras posibles que puede devolver la API
       const responseData = userResponse as Record<string, any>;
       const userId =
         responseData.usuario?.id ||
@@ -84,16 +81,14 @@ export default function PricingPage() {
         responseData.id ||
         null;
 
-      // 2. Si no hay userId, frenamos y avisamos antes de abrir el checkout
       if (!userId) {
         throw new Error(
           "No se pudo obtener el ID del usuario. Por favor vuelve a iniciar sesión."
         );
       }
 
-      console.log("--> userId obtenido para el checkout:", userId);
+      console.log("--> Enviando a Checkout userId:", userId);
 
-      // 3. Checkout 100% client-side con @paddle/paddle-js.
       await openPaddleCheckout({
         priceId: plan.priceId,
         userId: String(userId),
@@ -119,7 +114,6 @@ export default function PricingPage() {
           <h1 className="mt-4 text-4xl font-semibold tracking-tight">
             Elegí tu plan
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-zinc-400"></p>
         </div>
 
         <div className="mt-10">
@@ -133,13 +127,13 @@ export default function PricingPage() {
                     : "relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-7 shadow-[0_25px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl"
                 }
               >
-                {plan.recommended ? (
+                {plan.recommended && (
                   <div className="absolute right-4 top-4">
                     <span className="inline-flex items-center rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
                       Más Popular
                     </span>
                   </div>
-                ) : null}
+                )}
 
                 <div className="flex items-start justify-between gap-4">
                   <div>
