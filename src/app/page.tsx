@@ -826,6 +826,14 @@ export default function HomePage() {
               <p className="text-sm text-zinc-500">
                 &copy; 2026 Stone Studio. Todos los derechos reservados.
               </p>
+              
+              <a
+                href="mailto:support@stonestudio.cc"
+                className="text-sm text-zinc-500 transition hover:text-white"
+              >
+                support@stonestudio.cc
+              </a>
+
               <div className="flex gap-6">
                 <Link
                   href="/terms"
@@ -853,7 +861,7 @@ export default function HomePage() {
 
       {/* OVERLAY DE LOGIN - Solo visible si el usuario NO está autenticado */}
       {!isAuthenticated && !loadingUser ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/50 p-4 backdrop-blur-lg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/20 p-4 backdrop-blur-lg">
           <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-[#0a0d16]/95 p-8 shadow-[0_25px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl">
             <div className="pointer-events-none absolute -top-24 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-violet-600/30 blur-[100px]" />
 
