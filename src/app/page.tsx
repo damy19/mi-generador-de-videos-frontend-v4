@@ -860,24 +860,24 @@ export default function HomePage() {
       </main>
 
       {/* OVERLAY DE LOGIN - Solo visible si el usuario NO está autenticado */}
-      {!isAuthenticated && !loadingUser ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/20 p-4 backdrop-blur-lg">
-          <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-[#0a0d16]/95 p-8 shadow-[0_25px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl">
-            <div className="pointer-events-none absolute -top-24 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-violet-600/30 blur-[100px]" />
+{!isAuthenticated && !loadingUser ? (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/30 p-4">
+    <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-[#0a0d16]/95 p-8 shadow-[0_25px_80px_rgba(0,0,0,0.6)]">
+      <div className="pointer-events-none absolute -top-24 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-violet-600/30 blur-[100px]" />
 
-            <div className="relative space-y-6 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 via-blue-500 to-cyan-400 shadow-[0_0_40px_rgba(59,130,246,0.5)]">
-                <Sparkles className="h-6 w-6 text-white" />
-              </div>
+      <div className="relative space-y-6 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 via-blue-500 to-cyan-400 shadow-[0_0_40px_rgba(59,130,246,0.5)]">
+          <Sparkles className="h-6 w-6 text-white" />
+        </div>
 
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold tracking-tight text-white">
-                  Bienvenido a Stone Studio
-                </h2>
-                <p className="text-sm text-zinc-400">
-                  Inicia sesión con tu cuenta para acceder al generador y gestionar tus créditos.
-                </p>
-              </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold tracking-tight text-white">
+            Bienvenido a Stone Studio
+          </h2>
+          <p className="text-sm text-zinc-400">
+            Inicia sesión con tu cuenta para acceder al generador y gestionar tus créditos.
+          </p>
+        </div>
 
               {error ? (
                 <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-xs text-red-200">
